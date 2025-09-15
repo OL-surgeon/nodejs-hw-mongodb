@@ -1,25 +1,42 @@
-import * as contactsService from '../services/contacts.js';
+import { getAllContacts, getContactById } from '../services/contacts.js';
 
-export async function getContactsController(req, res) {
-  const contacts = await contactsService.getAllContacts();
-  res.json({
-    status: 200,
-    message: 'Successfully found contacts!',
-    data: contacts,
-  });
-}
+export const getContactsController = async (req, res) => {
+  try {
+    const contacts = await getAllContacts();
 
-export async function getContactByIdController(req, res) {
-  const { contactId } = req.params;
-  const contact = await contactsService.getContactById(contactId);
-
-  if (!contact) {
-    return res.status(404).json({ message: 'Contact not found' });
+    res.json({
+      status: 200,
+      message: 'Successfully found contacts!',
+      data: contacts,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 500,
+      message: 'Server error',
+      error: error.message,
+    });
   }
+};
 
-  res.json({
-    status: 200,
-    message: `Successfully found contact with id ${contactId}!`,
-    data: contact,
-  });
-}
+export const getContactByIdController = async (req, res) => {
+  try {
+    const { contactId } = req.params;
+    const contact = await getContactById(contactId);
+
+    if (!contact) {
+      return res.status(404).json({ message: 'Contact not found' });
+    }
+
+    res.json({
+      status: 200,
+      message: `Successfully found contact with id ${contactId}!`,
+      data: contact,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 500,
+      message: 'Server error',
+      error: error.message,
+    });
+  }
+};

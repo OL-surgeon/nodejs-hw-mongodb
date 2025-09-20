@@ -1,13 +1,13 @@
-const express = require('express');
-const router = express.Router();
+import dotenv from 'dotenv';
 
-router.get('/', (req, res) => {
-  res.json({ message: 'Here are all contacts' });
-});
+dotenv.config();
 
-router.post('/', (req, res) => {
-  const newContact = req.body;
-  res.status(201).json({ message: 'Contact created', contact: newContact });
-});
+export function contactsRouter(name, defaultValue) {
+  const value = process.env[name];
 
-module.exports = router;
+  if (value) return value;
+
+  if (defaultValue) return defaultValue;
+
+  throw new Error(`Missing: process.env['${name}'].`);
+}

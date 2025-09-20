@@ -1,23 +1,19 @@
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
+import mongoose from 'mongoose';
+import { contactsRouter } from '../routes/contacts.js';
 
-dotenv.config();
-
-const initMongoConnection = async () => {
-  const { MONGODB_USER, MONGODB_PASSWORD, MONGODB_URL, MONGODB_DB } =
-    process.env;
-
-  const MONGODB_URI = `mongodb+srv://${MONGODB_USER}:${encodeURIComponent(
-    MONGODB_PASSWORD,
-  )}@${MONGODB_URL}/${MONGODB_DB}?retryWrites=true&w=majority`;
-
+export const initMongoConnection = async () => {
   try {
-    await mongoose.connect(MONGODB_URI);
+    const user = contactsRouter('MONGODB_USER');
+    const pwd = contactsRouter('MONGODB_PASSWORD');
+    const url = contactsRouter('MONGODB_URL');
+    const db = contactsRouter('MONGODB_DB');
+
+    await mongoose.connect(
+      `mongodb+srv://${user}:${pwd}@${url}/${db}?retryWrites=true&w=majority`,
+    );
     console.log('Mongo connection successfully established!');
-  } catch (error) {
-    console.error('Mongo connection failed:', error.message);
-    process.exit(1);
+  } catch (e) {
+    console.log('Error while setting up mongo connection', e);
+    throw e;
   }
 };
-
-module.exports = initMongoConnection;

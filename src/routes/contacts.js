@@ -11,3 +11,4 @@ export function contactsRouter(name, defaultValue) {
 
   throw new Error(`Missing: process.env['${name}'].`);
 }
+export default router;

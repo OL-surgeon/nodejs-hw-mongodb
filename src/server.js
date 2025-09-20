@@ -1,7 +1,7 @@
-const express = require('express');
-const cors = require('cors');
-const pino = require('pino-http');
-const contactsRouter = require('./routes/contacts');
+import express from 'express';
+import pino from 'pino-http';
+import cors from 'cors';
+import contactsRouter from './routes/contacts.js';
 
 import { getAllContacts, getContactById } from './services/contacts.js';
 

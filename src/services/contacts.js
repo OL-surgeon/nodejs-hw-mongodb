@@ -7,7 +7,6 @@ export const getAllContacts = async () => {
 export const getContactById = async (contactId) => {
   return Contact.findById(contactId);
 };
-import { Contact } from '../db/models/contact.js';
 
 export const createContact = async (contactData) => {
   const contact = await Contact.create(contactData);

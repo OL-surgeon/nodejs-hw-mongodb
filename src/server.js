@@ -3,14 +3,14 @@ import pino from 'pino-http';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import contactsRouter from './routers/contacts.js';
-import { contactsRouter } from './routes/contacts.js';
+import { contactsRout } from './routes/contacts.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { notFoundHandler } from './middlewares/notFoundHandler.js';
 
 dotenv.config();
 
 export const setupServer = () => {
-  const PORT = process.env.PORT || 3000;
+  const PORT = Number(contactsRout('PORT', '3000'));
   const app = express();
 
   app.use(express.json());

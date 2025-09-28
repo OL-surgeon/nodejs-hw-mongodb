@@ -13,7 +13,7 @@ export const createContact = async (contactData) => {
   return contact;
 };
 
-export const patchContact = async (contactId, updateData) => {
+export const updateContact = async (contactId, updateData) => {
   const updatedContact = await Contact.findByIdAndUpdate(
     contactId,
     updateData,

@@ -1,6 +1,7 @@
 import { Contact } from '../models/contact.js';
 
 export const getAllContacts = async ({
+  userId,
   page,
   perPage,
   sortBy,
@@ -10,10 +11,12 @@ export const getAllContacts = async ({
 }) => {
   const skip = (page - 1) * perPage;
 
-  const filter = {};
+  const filter = { userId };
+
   if (type) {
     filter.contactType = type;
   }
+
   if (isFavourite !== undefined) {
     filter.isFavourite = isFavourite === 'true';
   }
@@ -22,7 +25,7 @@ export const getAllContacts = async ({
   const totalPages = Math.ceil(totalItems / perPage);
 
   const sortField = sortBy || 'name';
-  const sortDirection = sortOrder === 'desc' ? -1 : 1; // за замовчуванням asc
+  const sortDirection = sortOrder === 'desc' ? -1 : 1;
 
   const contacts = await Contact.find(filter)
     .sort({ [sortField]: sortDirection })
@@ -32,18 +35,20 @@ export const getAllContacts = async ({
   return { contacts, totalItems, totalPages };
 };
 
-export const getContactById = async (contactId) => {
-  return Contact.findById(contactId);
+export const getContactById = async (contactId, userId) => {
+  return Contact.findOne({ _id: contactId, userId });
 };
 
-export const createContact = async (contactData) => {
-  return Contact.create(contactData);
+export const createContact = async (contactData, userId) => {
+  return Contact.create({ ...contactData, userId });
 };
 
-export const updateContact = async (contactId, updateData) => {
-  return Contact.findByIdAndUpdate(contactId, updateData, { new: true });
+export const updateContact = async (contactId, updateData, userId) => {
+  return Contact.findOneAndUpdate({ _id: contactId, userId }, updateData, {
+    new: true,
+  });
 };
 
-export const deleteContact = async (contactId) => {
-  return Contact.findByIdAndDelete(contactId);
+export const deleteContact = async (contactId, userId) => {
+  return Contact.findOneAndDelete({ _id: contactId, userId });
 };

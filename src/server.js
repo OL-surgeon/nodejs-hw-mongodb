@@ -6,7 +6,7 @@ import { contactsRouter } from './routers/contacts.js';
 import { contactsRout } from './routes/contacts.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { notFoundHandler } from './middlewares/notFoundHandler.js';
-
+import { authRouter } from './routers/auth.js';
 dotenv.config();
 
 export const setupServer = () => {
@@ -31,7 +31,7 @@ export const setupServer = () => {
   });
 
   app.use('/contacts', contactsRouter);
-
+  app.use('/auth', authRouter);
   app.use(notFoundHandler);
 
   app.use(errorHandler);

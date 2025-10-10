@@ -1,12 +1,12 @@
 import mongoose from 'mongoose';
-import { contactsRouter } from '../routes/contacts.js';
+import { contactsRout } from '../routes/contacts.js';
 
 export const initMongoConnection = async () => {
   try {
-    const user = contactsRouter('MONGODB_USER');
-    const pwd = contactsRouter('MONGODB_PASSWORD');
-    const url = contactsRouter('MONGODB_URL');
-    const db = contactsRouter('MONGODB_DB');
+    const user = contactsRout('MONGODB_USER');
+    const pwd = contactsRout('MONGODB_PASSWORD');
+    const url = contactsRout('MONGODB_URL');
+    const db = contactsRout('MONGODB_DB');
 
     await mongoose.connect(
       `mongodb+srv://${user}:${pwd}@${url}/${db}?retryWrites=true&w=majority`,

@@ -2,6 +2,7 @@ import express from 'express';
 import pino from 'pino-http';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
 import { contactsRouter } from './routers/contacts.js';
 import { contactsRout } from './routes/contacts.js';
 import { errorHandler } from './middlewares/errorHandler.js';
@@ -15,7 +16,7 @@ export const setupServer = () => {
 
   app.use(express.json());
   app.use(cors());
-
+  app.use(cookieParser());
   app.use(
     pino({
       transport: {

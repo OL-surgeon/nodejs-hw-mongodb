@@ -1,78 +1,63 @@
-import {
-  registerUser,
-  loginUser,
-  refreshSession,
-  logoutUser,
-} from '../services/auth.js';
-import { registerUserSchema, loginUserSchema } from '../schemas/authSchemas.js';
-import { ctrlWrapper } from '../utils/ctrlWrapper.js';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import createHttpError from 'http-errors';
+import { User } from '../db/models/user.js';
 
-export const registerController = ctrlWrapper(async (req, res) => {
-  const { error, value } = registerUserSchema.validate(req.body);
-  if (error) {
-    throw createHttpError(400, error.details[0].message);
-  }
+export const registerUser = async ({ email, password }) => {
+  const existingUser = await User.findOne({ email });
+  if (existingUser) throw createHttpError(409, 'Email already in use');
 
-  const user = await registerUser(value);
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const user = await User.create({ email, password: hashedPassword });
+  return { email: user.email, id: user._id };
+};
 
-  res.status(201).json({
-    status: 201,
-    message: 'Successfully registered a user!',
-    data: user,
-  });
-});
+export const loginUser = async ({ email, password }) => {
+  const user = await User.findOne({ email });
+  if (!user) throw createHttpError(401, 'Email or password invalid');
 
-export const loginController = ctrlWrapper(async (req, res) => {
-  const { error, value } = loginUserSchema.validate(req.body);
-  if (error) {
-    throw createHttpError(400, error.details[0].message);
-  }
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) throw createHttpError(401, 'Email or password invalid');
 
-  const { accessToken, refreshToken } = await loginUser(value);
-
-  res.cookie('refreshToken', refreshToken, {
-    httpOnly: true,
-    secure: true,
-    maxAge: 30 * 24 * 60 * 60 * 1000,
+  const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    expiresIn: '15m',
   });
 
-  res.status(200).json({
-    status: 200,
-    message: 'Successfully logged in an user!',
-    data: { accessToken },
-  });
-});
+  const refreshToken = jwt.sign(
+    { id: user._id },
+    process.env.JWT_REFRESH_SECRET,
+    { expiresIn: '30d' },
+  );
 
-export const refreshController = ctrlWrapper(async (req, res) => {
-  const { refreshToken } = req.cookies;
-  if (!refreshToken) throw createHttpError(401, 'Refresh token is missing');
+  user.refreshToken = refreshToken;
+  await user.save();
 
-  const { accessToken, newRefreshToken } = await refreshSession(refreshToken);
+  return { accessToken, refreshToken };
+};
 
-  res.cookie('refreshToken', newRefreshToken, {
-    httpOnly: true,
-    secure: true,
-    maxAge: 30 * 24 * 60 * 60 * 1000,
-  });
+export const refreshSession = async (refreshToken) => {
+  const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+  const user = await User.findById(payload.id);
+  if (!user || user.refreshToken !== refreshToken)
+    throw createHttpError(401, 'Invalid refresh token');
 
-  res.status(200).json({
-    status: 200,
-    message: 'Successfully refreshed a session!',
-    data: { accessToken },
-  });
-});
-
-export const logoutController = ctrlWrapper(async (req, res) => {
-  const { refreshToken } = req.cookies;
-  if (!refreshToken) throw createHttpError(401, 'Refresh token is missing');
-
-  await logoutUser(refreshToken);
-
-  res.clearCookie('refreshToken', {
-    httpOnly: true,
-    secure: true,
+  const newAccessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    expiresIn: '15m',
   });
 
-  res.status(204).send();
-});
+  const newRefreshToken = jwt.sign(
+    { id: user._id },
+    process.env.JWT_REFRESH_SECRET,
+    { expiresIn: '30d' },
+  );
+
+  user.refreshToken = newRefreshToken;
+  await user.save();
+
+  return { accessToken: newAccessToken, newRefreshToken };
+};
+
+export const logoutUser = async (refreshToken) => {
+  const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+  await User.findByIdAndUpdate(payload.id, { refreshToken: null });
+};

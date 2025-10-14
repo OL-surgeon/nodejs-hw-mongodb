@@ -1,5 +1,5 @@
 import * as authService from '../services/auth.js';
-import { registerUserSchema } from '../validations/auth.js';
+import { registerUserSchema } from '../schemas/authSchemas.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 import createHttpError from 'http-errors';
 import { logoutUser } from '../services/auth.js';

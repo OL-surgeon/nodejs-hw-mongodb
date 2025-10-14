@@ -21,7 +21,7 @@ const userSchema = new Schema(
     },
   },
   {
-    timestamps: true, // автоматично додає createdAt і updatedAt
+    timestamps: true,
     versionKey: false,
   },
 );

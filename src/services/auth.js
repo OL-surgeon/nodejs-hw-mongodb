@@ -4,11 +4,10 @@ import {
   refreshSession,
   logoutUser,
 } from '../services/auth.js';
-import { registerUserSchema, loginUserSchema } from '../validations/auth.js';
+import { registerUserSchema, loginUserSchema } from '../schemas/authSchemas.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 import createHttpError from 'http-errors';
 
-// ---------------- REGISTER ----------------
 export const registerController = ctrlWrapper(async (req, res) => {
   const { error, value } = registerUserSchema.validate(req.body);
   if (error) {
@@ -24,7 +23,6 @@ export const registerController = ctrlWrapper(async (req, res) => {
   });
 });
 
-// ---------------- LOGIN ----------------
 export const loginController = ctrlWrapper(async (req, res) => {
   const { error, value } = loginUserSchema.validate(req.body);
   if (error) {
@@ -36,7 +34,7 @@ export const loginController = ctrlWrapper(async (req, res) => {
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
     secure: true,
-    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 днів
+    maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 
   res.status(200).json({
@@ -46,18 +44,16 @@ export const loginController = ctrlWrapper(async (req, res) => {
   });
 });
 
-// ---------------- REFRESH ----------------
 export const refreshController = ctrlWrapper(async (req, res) => {
   const { refreshToken } = req.cookies;
   if (!refreshToken) throw createHttpError(401, 'Refresh token is missing');
 
   const { accessToken, newRefreshToken } = await refreshSession(refreshToken);
 
-  // Оновлюємо cookie
   res.cookie('refreshToken', newRefreshToken, {
     httpOnly: true,
     secure: true,
-    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 днів
+    maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 
   res.status(200).json({
@@ -67,7 +63,6 @@ export const refreshController = ctrlWrapper(async (req, res) => {
   });
 });
 
-// ---------------- LOGOUT ----------------
 export const logoutController = ctrlWrapper(async (req, res) => {
   const { refreshToken } = req.cookies;
   if (!refreshToken) throw createHttpError(401, 'Refresh token is missing');
@@ -79,5 +74,5 @@ export const logoutController = ctrlWrapper(async (req, res) => {
     secure: true,
   });
 
-  res.status(204).send(); // без тіла
+  res.status(204).send();
 });

@@ -11,7 +11,7 @@ export const getAllContacts = async (req, res) => {
     isFavourite,
   } = req.query;
 
-  const userId = req.user._id; // беремо з authenticate middleware
+  const userId = req.user._id;
 
   const { contacts, totalItems, totalPages } =
     await contactsService.getAllContacts({

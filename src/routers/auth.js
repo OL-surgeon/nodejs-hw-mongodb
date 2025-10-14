@@ -2,7 +2,11 @@ import { Router } from 'express';
 import cookieParser from 'cookie-parser';
 import { validateBody } from '../middlewares/validateBody.js';
 import { registerUserSchema, loginUserSchema } from '../schemas/authSchemas.js';
-import * as authController from '../controllers/auth.js';
+import {
+  registerController,
+  loginUser,
+  logoutController,
+} from '../controllers/auth.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 
 export const authRouter = Router();
@@ -12,13 +16,13 @@ authRouter.use(cookieParser());
 authRouter.post(
   '/register',
   validateBody(registerUserSchema),
-  ctrlWrapper(authController.registerUser),
+  ctrlWrapper(registerController),
 );
 
 authRouter.post(
   '/login',
   validateBody(loginUserSchema),
-  ctrlWrapper(authController.loginUser),
+  ctrlWrapper(loginUser),
 );
-authRouter.post('/logout', logoutController);
-authRouter.post('/refresh', ctrlWrapper(authController.refreshSession));
+
+authRouter.post('/logout', ctrlWrapper(logoutController));

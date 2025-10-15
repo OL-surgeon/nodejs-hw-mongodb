@@ -46,7 +46,7 @@ import pino from 'pino-http';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
-import router from './routers/index.js';
+import { router } from './routers/index.js';
 import { contactsRout } from './routes/contacts.js';
 
 import { errorHandler } from './middlewares/errorHandler.js';

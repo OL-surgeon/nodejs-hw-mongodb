@@ -74,7 +74,7 @@ export const setupServer = () => {
       message: 'Hello MongoDB!',
     });
   });
-  app.use('/contacts', contactsRouter);
+
   app.use(router);
   app.use(notFoundHandler);
   app.use(errorHandler);

@@ -41,19 +41,20 @@
 //     console.log(`Server is running on port ${PORT}`);
 //   });
 // };
+// src/server.js
 import express from 'express';
 import pino from 'pino-http';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
 import router from './routers/index.js';
-import { contactsRout } from './routes/contacts.js';
+import { getEnvVar } from './utils/getEnvVar.js';
 
 import { errorHandler } from './middlewares/errorHandler.js';
 import { notFoundHandler } from './middlewares/notFoundHandler.js';
 
 export const setupServer = () => {
-  const PORT = Number(contactsRout('PORT', '3000'));
+  const PORT = Number(getEnvVar('PORT', '3000'));
   const app = express();
 
   app.use(express.json());
@@ -68,13 +69,18 @@ export const setupServer = () => {
     }),
   );
 
+  // Тестова домашня сторінка
   app.get('/', (req, res) => {
     res.json({
-      message: 'Hello MondoDB!',
+      message: 'Hello MongoDB!',
     });
   });
 
-  app.use(router);
+  // Основні роутери
+  app.use('/contacts', router); // router вже містить /contacts та /auth
+  app.use('/auth', router);
+
+  // 404 та глобальний обробник помилок
   app.use(notFoundHandler);
   app.use(errorHandler);
 

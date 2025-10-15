@@ -24,14 +24,14 @@ export const authenticate = async (req, res, next) => {
     }
 
     const session = await Session.findOne({
-      userId: decoded.sub,
+      userId: decoded.id,
       accessToken: token,
     });
     if (!session) {
       throw createHttpError(401, 'Invalid session');
     }
 
-    const user = await User.findById(decoded.sub).select('-password');
+    const user = await User.findById(decoded.id).select('-password');
     if (!user) {
       throw createHttpError(401, 'User not found');
     }

@@ -1,29 +1,18 @@
-import { Schema, model } from 'mongoose';
+import { model, Schema } from 'mongoose';
 
-const userSchema = new Schema(
+const usersSchema = new Schema(
   {
-    name: {
-      type: String,
-      required: [true, 'Name is required'],
-      minlength: 3,
-      maxlength: 20,
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: [true, 'Email is required'],
-      unique: true,
-      match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email address'],
-    },
-    password: {
-      type: String,
-      required: [true, 'Password is required'],
-    },
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
   },
-  {
-    timestamps: true,
-    versionKey: false,
-  },
+  { timestamps: true, versionKey: false },
 );
 
-export const User = model('User', userSchema);
+usersSchema.methods.toJSON = function () {
+  const obj = this.toObject();
+  delete obj.password;
+  return obj;
+};
+
+export const UsersCollection = model('users', usersSchema);

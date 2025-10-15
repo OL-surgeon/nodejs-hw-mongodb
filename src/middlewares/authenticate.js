@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import createHttpError from 'http-errors';
 import { Session } from '../models/session.js';
-import { UsersCollection } from '../models/user.js';
+import { User } from '../models/user.js';
 
 export const authenticate = async (req, res, next) => {
   try {
@@ -31,9 +31,7 @@ export const authenticate = async (req, res, next) => {
       throw createHttpError(401, 'Invalid session');
     }
 
-    const user = await UsersCollection.findById(decoded.sub).select(
-      '-password',
-    );
+    const user = await User.findById(decoded.sub).select('-password');
     if (!user) {
       throw createHttpError(401, 'User not found');
     }

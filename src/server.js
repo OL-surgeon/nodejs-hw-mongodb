@@ -69,18 +69,13 @@ export const setupServer = () => {
     }),
   );
 
-  // Тестова домашня сторінка
   app.get('/', (req, res) => {
     res.json({
       message: 'Hello MongoDB!',
     });
   });
 
-  // Основні роутери
-  app.use('/contacts', router); // router вже містить /contacts та /auth
-  app.use('/auth', router);
-
-  // 404 та глобальний обробник помилок
+  app.use(router);
   app.use(notFoundHandler);
   app.use(errorHandler);
 

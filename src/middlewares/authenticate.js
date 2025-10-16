@@ -1,44 +1,42 @@
-import jwt from 'jsonwebtoken';
 import createHttpError from 'http-errors';
+
 import { Session } from '../models/session.js';
 import { User } from '../models/user.js';
 
 export const authenticate = async (req, res, next) => {
-  try {
-    const authHeader = req.headers.authorization;
+  const authHeader = req.get('Authorization');
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw createHttpError(401, 'Access token missing');
-    }
-
-    const token = authHeader.split(' ')[1];
-
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
-    } catch (err) {
-      if (err.name === 'TokenExpiredError') {
-        throw createHttpError(401, 'Access token expired');
-      }
-      throw createHttpError(401, 'Invalid access token');
-    }
-
-    const session = await Session.findOne({
-      userId: decoded.id,
-      accessToken: token,
-    });
-    if (!session) {
-      throw createHttpError(401, 'Invalid session');
-    }
-
-    const user = await User.findById(decoded.id).select('-password');
-    if (!user) {
-      throw createHttpError(401, 'User not found');
-    }
-
-    req.user = user;
-    next();
-  } catch (err) {
-    next(err);
+  if (!authHeader) {
+    next(createHttpError(401, 'Please provide Authorization header'));
+    return;
   }
+  const bearer = authHeader.split(' ')[0];
+  const token = authHeader.split(' ')[1];
+
+  if (bearer !== 'Bearer' || !token) {
+    next(createHttpError(401, 'Auth header should be of type Bearer'));
+    return;
+  }
+  const session = await Session.findOne({ accessToken: token });
+
+  if (!session) {
+    next(createHttpError(401, 'Session not found'));
+    return;
+  }
+  const isAccessTokenExpired =
+    new Date() > new Date(session.accessTokenValidUntil);
+
+  if (isAccessTokenExpired) {
+    next(createHttpError(401, 'Access token expired'));
+  }
+  const user = await User.findById(session.userId);
+
+  if (!user) {
+    next(createHttpError(401));
+    return;
+  }
+
+  req.user = user;
+
+  next();
 };

@@ -60,7 +60,7 @@ const createSession = () => {
   };
 };
 
-export const refreshUsersSession = async ({ sessionId, refreshToken }) => {
+export const refreshSession = async ({ sessionId, refreshToken }) => {
   const session = await Session.findOne({ _id: sessionId, refreshToken });
   if (!session) throw createHttpError(401, 'Session not found');
 

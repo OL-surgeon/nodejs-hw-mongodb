@@ -66,12 +66,14 @@ export const logoutController = ctrlWrapper(async (req, res) => {
 // =======================
 export const refreshSessionController = ctrlWrapper(async (req, res) => {
   const { refreshToken } = req.cookies;
-  if (!refreshToken) {
-    throw createHttpError(401, 'Refresh token missing');
+  const { sessionId } = req.body; // можеш передати з Postman або клієнта
+
+  if (!refreshToken && !sessionId) {
+    throw createHttpError(401, 'Refresh token or sessionId required');
   }
 
-  const { accessToken, newRefreshToken } =
-    await authService.refreshSession(refreshToken);
+  const { accessToken, newRefreshToken, newSessionId } =
+    await authService.refreshSession({ refreshToken, sessionId });
 
   res.cookie('refreshToken', newRefreshToken, {
     httpOnly: true,
@@ -83,6 +85,6 @@ export const refreshSessionController = ctrlWrapper(async (req, res) => {
   res.status(200).json({
     status: 200,
     message: 'Successfully refreshed a session!',
-    data: { accessToken },
+    data: { accessToken, sessionId: newSessionId },
   });
 });

@@ -25,7 +25,6 @@ export const loginUser = async (payload) => {
   const isValid = await bcrypt.compare(payload.password, user.password);
   if (!isValid) throw createHttpError(401, 'Unauthorized');
 
-  // Видаляємо старі сесії
   await Session.deleteMany({ userId: user._id });
 
   const accessToken = randomBytes(30).toString('base64');
@@ -69,6 +68,7 @@ export const refreshSession = async ({ sessionId, refreshToken }) => {
 
   const newSession = createSession();
   await Session.deleteOne({ _id: sessionId });
+  await Session.deleteOne({ _id: sessionId, refreshToken });
 
   return await Session.create({
     userId: session.userId,

@@ -26,7 +26,9 @@ export const registerController = ctrlWrapper(async (req, res) => {
 // Контролер логіну
 // =======================
 export const loginUser = ctrlWrapper(async (req, res) => {
-  const { accessToken, refreshToken } = await authService.loginUser(req.body);
+  const { accessToken, refreshToken, sessionId } = await authService.loginUser(
+    req.body,
+  );
 
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,

@@ -66,46 +66,19 @@ const createSession = () => {
   };
 };
 
-/**
- * 🔁 Оновлення сесії
- * Працює як з `refreshToken`, так і з `sessionId`.
- * Якщо передані обидва — шукає за обома.
- */
-export const refreshSession = async ({ refreshToken, sessionId }) => {
-  let session;
-
-  // 🔍 Якщо передано і sessionId, і refreshToken
-  if (sessionId && refreshToken) {
-    session = await Session.findOne({ _id: sessionId, refreshToken });
-  }
-  // 🔍 Якщо передано лише refreshToken
-  else if (refreshToken) {
-    session = await Session.findOne({ refreshToken });
-  }
-  // 🔍 Якщо передано лише sessionId
-  else if (sessionId) {
-    session = await Session.findById(sessionId);
-  }
-
+export const refreshSession = async ({ sessionId, refreshToken }) => {
+  const session = await Session.findOne({ _id: sessionId, refreshToken });
   if (!session) throw createHttpError(401, 'Session not found');
 
   const isExpired = new Date() > new Date(session.refreshTokenValidUntil);
-  if (isExpired) throw createHttpError(401, 'Refresh token expired');
+  if (isExpired) throw createHttpError(401, 'Session token expired');
 
-  const newTokens = createSession();
+  const newSessionData = createSession();
 
-  // Видаляємо стару сесію
-  await Session.deleteOne({ _id: session._id });
+  await Session.deleteOne({ _id: sessionId });
 
-  // Створюємо нову
-  const newSession = await Session.create({
+  return await Session.create({
     userId: session.userId,
-    ...newTokens,
+    ...newSessionData,
   });
-
-  return {
-    accessToken: newSession.accessToken,
-    newRefreshToken: newSession.refreshToken,
-    newSessionId: newSession._id,
-  };
 };

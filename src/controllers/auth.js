@@ -65,26 +65,38 @@ export const logoutController = ctrlWrapper(async (req, res) => {
 // Контролер оновлення сесії
 // =======================
 export const refreshSessionController = ctrlWrapper(async (req, res) => {
-  const { refreshToken } = req.cookies;
-  const { sessionId } = req.body; // можеш передати з Postman або клієнта
+  const { refreshToken, sessionId } = req.cookies;
 
-  if (!refreshToken && !sessionId) {
-    throw createHttpError(401, 'Refresh token or sessionId required');
+  if (!refreshToken || !sessionId) {
+    throw createHttpError(401, 'Session or refresh token missing');
   }
 
-  const { accessToken, newRefreshToken, newSessionId } =
-    await authService.refreshSession({ refreshToken, sessionId });
+  const newSession = await authService.refreshSession({
+    refreshToken,
+    sessionId,
+  });
 
-  res.cookie('refreshToken', newRefreshToken, {
+  // Оновлюємо cookies
+  res.cookie('refreshToken', newSession.refreshToken, {
     httpOnly: true,
     secure: true,
     sameSite: 'none',
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 днів
   });
 
+  res.cookie('sessionId', newSession._id.toString(), {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none',
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+  });
+
   res.status(200).json({
     status: 200,
     message: 'Successfully refreshed a session!',
-    data: { accessToken, sessionId: newSessionId },
+    data: {
+      accessToken: newSession.accessToken,
+      sessionId: newSession._id,
+    },
   });
 });

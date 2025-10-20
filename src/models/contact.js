@@ -17,6 +17,7 @@ const contactSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    photo: { type: String }, // нове поле для збереження URL фото
   },
   { timestamps: true, versionKey: false },
 );

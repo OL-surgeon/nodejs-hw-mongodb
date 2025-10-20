@@ -1,6 +1,6 @@
 import createHttpError from 'http-errors';
 import * as contactsService from '../services/contacts.js';
-
+import cloudinary from '../utils/cloudinary.js';
 export const getAllContacts = async (req, res) => {
   const {
     page = 1,
@@ -60,11 +60,20 @@ export const createContact = async (req, res) => {
   const { name, phoneNumber, contactType, email, isFavourite } = req.body;
   const userId = req.user._id;
 
-  if (!name || !phoneNumber || !contactType) {
-    throw createHttpError(
-      400,
-      'name, phoneNumber і contactType є обов’язковими',
+  let photoUrl = null;
+  if (req.file) {
+    const result = await cloudinary.uploader.upload_stream(
+      { resource_type: 'image' },
+      (err, result) => {
+        if (err) throw err;
+        photoUrl = result.secure_url;
+      },
     );
+    const stream = cloudinary.uploader.upload_stream((error, result) => {
+      if (error) throw error;
+      photoUrl = result.secure_url;
+    });
+    stream.end(req.file.buffer);
   }
 
   const newContact = await contactsService.createContact(
@@ -74,6 +83,7 @@ export const createContact = async (req, res) => {
       contactType,
       email: email || null,
       isFavourite: isFavourite || false,
+      photo: photoUrl,
     },
     userId,
   );
@@ -85,13 +95,30 @@ export const createContact = async (req, res) => {
   });
 };
 
+// PATCH /contacts/:contactId
 export const updateContact = async (req, res) => {
   const { contactId } = req.params;
   const userId = req.user._id;
 
+  let photoUrl = null;
+  if (req.file) {
+    const result = await cloudinary.uploader.upload_stream(
+      { resource_type: 'image' },
+      (err, result) => {
+        if (err) throw err;
+        photoUrl = result.secure_url;
+      },
+    );
+    const stream = cloudinary.uploader.upload_stream((error, result) => {
+      if (error) throw error;
+      photoUrl = result.secure_url;
+    });
+    stream.end(req.file.buffer);
+  }
+
   const updated = await contactsService.updateContact(
     contactId,
-    req.body,
+    { ...req.body, ...(photoUrl && { photo: photoUrl }) },
     userId,
   );
 

@@ -1,6 +1,26 @@
 import createHttpError from 'http-errors';
 import * as contactsService from '../services/contacts.js';
 import cloudinary from '../utils/cloudinary.js';
+
+/**
+ * Завантаження зображення на Cloudinary (Promise-версія)
+ */
+const uploadToCloudinary = (fileBuffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: 'contacts_photos' },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result.secure_url);
+      },
+    );
+    stream.end(fileBuffer);
+  });
+};
+
+/**
+ * GET /contacts
+ */
 export const getAllContacts = async (req, res) => {
   const {
     page = 1,
@@ -39,6 +59,9 @@ export const getAllContacts = async (req, res) => {
   });
 };
 
+/**
+ * GET /contacts/:contactId
+ */
 export const getContactById = async (req, res) => {
   const { contactId } = req.params;
   const userId = req.user._id;
@@ -56,24 +79,16 @@ export const getContactById = async (req, res) => {
   });
 };
 
+/**
+ * POST /contacts
+ */
 export const createContact = async (req, res) => {
   const { name, phoneNumber, contactType, email, isFavourite } = req.body;
   const userId = req.user._id;
 
   let photoUrl = null;
   if (req.file) {
-    const result = await cloudinary.uploader.upload_stream(
-      { resource_type: 'image' },
-      (err, result) => {
-        if (err) throw err;
-        photoUrl = result.secure_url;
-      },
-    );
-    const stream = cloudinary.uploader.upload_stream((error, result) => {
-      if (error) throw error;
-      photoUrl = result.secure_url;
-    });
-    stream.end(req.file.buffer);
+    photoUrl = await uploadToCloudinary(req.file.buffer);
   }
 
   const newContact = await contactsService.createContact(
@@ -95,25 +110,16 @@ export const createContact = async (req, res) => {
   });
 };
 
-// PATCH /contacts/:contactId
+/**
+ * PATCH /contacts/:contactId
+ */
 export const updateContact = async (req, res) => {
   const { contactId } = req.params;
   const userId = req.user._id;
 
   let photoUrl = null;
   if (req.file) {
-    const result = await cloudinary.uploader.upload_stream(
-      { resource_type: 'image' },
-      (err, result) => {
-        if (err) throw err;
-        photoUrl = result.secure_url;
-      },
-    );
-    const stream = cloudinary.uploader.upload_stream((error, result) => {
-      if (error) throw error;
-      photoUrl = result.secure_url;
-    });
-    stream.end(req.file.buffer);
+    photoUrl = await uploadToCloudinary(req.file.buffer);
   }
 
   const updated = await contactsService.updateContact(
@@ -133,6 +139,9 @@ export const updateContact = async (req, res) => {
   });
 };
 
+/**
+ * DELETE /contacts/:contactId
+ */
 export const deleteContact = async (req, res) => {
   const { contactId } = req.params;
   const userId = req.user._id;

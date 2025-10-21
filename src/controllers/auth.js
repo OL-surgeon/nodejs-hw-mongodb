@@ -8,6 +8,8 @@ import nodemailer from 'nodemailer';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { Session } from '../models/session.js';
+import { getEnvVar } from '../utils/getEnvVar.js';
+const JWT_SECRET = getEnvVar('JWT_SECRET');
 // =======================
 // Контролер реєстрації
 // =======================
@@ -122,9 +124,7 @@ export const sendResetEmailController = ctrlWrapper(async (req, res) => {
   }
 
   // Генеруємо JWT токен терміном на 5 хв
-  const token = jwt.sign({ email }, process.env.JWT_SECRET, {
-    expiresIn: '5m',
-  });
+  const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: '5m' });
 
   // Формуємо посилання для фронтенду
   const resetLink = `${process.env.APP_DOMAIN}/reset-password?token=${token}`;

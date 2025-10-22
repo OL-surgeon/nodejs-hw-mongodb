@@ -48,7 +48,10 @@ export const getAllContacts = async (req, res) => {
     status: 200,
     message: 'Successfully found contacts!',
     data: {
-      data: contacts,
+      data: contacts.map((c) => ({
+        ...c.toObject(),
+        photo: c.photo || null, // переконуємось, що photo завжди є
+      })),
       page: Number(page),
       perPage: Number(perPage),
       totalItems,
@@ -75,7 +78,10 @@ export const getContactById = async (req, res) => {
   res.status(200).json({
     status: 200,
     message: `Successfully found contact with id ${contactId}!`,
-    data: contact,
+    data: {
+      ...contact.toObject(),
+      photo: contact.photo || null,
+    },
   });
 };
 
@@ -106,7 +112,10 @@ export const createContact = async (req, res) => {
   res.status(201).json({
     status: 201,
     message: 'Successfully created a contact!',
-    data: { contact: newContact },
+    data: {
+      ...newContact.toObject(),
+      photo: newContact.photo || null,
+    },
   });
 };
 
@@ -135,7 +144,10 @@ export const updateContact = async (req, res) => {
   res.status(200).json({
     status: 200,
     message: 'Successfully patched a contact!',
-    data: updated,
+    data: {
+      ...updated.toObject(),
+      photo: updated.photo || null,
+    },
   });
 };
 

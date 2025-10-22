@@ -10,6 +10,12 @@ import bcrypt from 'bcrypt';
 import { Session } from '../models/session.js';
 import { getEnvVar } from '../utils/getEnvVar.js';
 const JWT_SECRET = getEnvVar('JWT_SECRET');
+const APP_DOMAIN = getEnvVar('APP_DOMAIN');
+const SMTP_HOST = getEnvVar('SMTP_HOST');
+const SMTP_PORT = getEnvVar('SMTP_PORT');
+const SMTP_USER = getEnvVar('SMTP_USER');
+const SMTP_PASSWORD = getEnvVar('SMTP_PASSWORD');
+const SMTP_FROM = getEnvVar('SMTP_FROM');
 // =======================
 // Контролер реєстрації
 // =======================
@@ -127,21 +133,17 @@ export const sendResetEmailController = ctrlWrapper(async (req, res) => {
   const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: '5m' });
 
   // Формуємо посилання для фронтенду
-  const resetLink = `${process.env.APP_DOMAIN}/reset-password?token=${token}`;
+  const resetLink = `${APP_DOMAIN}/reset-password?token=${token}`;
 
-  // Налаштування nodemailer через Brevo SMTP
   const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASSWORD,
-    },
+    host: SMTP_HOST,
+    port: Number(SMTP_PORT),
+    auth: { user: SMTP_USER, pass: SMTP_PASSWORD },
   });
 
   try {
     await transporter.sendMail({
-      from: process.env.SMTP_FROM,
+      from: SMTP_FROM,
       to: email,
       subject: 'Reset your password',
       html: `<p>Click <a href="${resetLink}">here</a> to reset your password. This link will expire in 5 minutes.</p>`,
@@ -164,7 +166,7 @@ export const resetPasswordController = ctrlWrapper(async (req, res) => {
 
   let payload;
   try {
-    payload = jwt.verify(token, process.env.JWT_SECRET);
+    payload = jwt.verify(token, JWT_SECRET);
   } catch (err) {
     throw createHttpError(401, 'Token is expired or invalid.');
   }

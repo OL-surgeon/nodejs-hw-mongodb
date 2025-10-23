@@ -49,7 +49,7 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import router from './routers/index.js';
 import { getEnvVar } from './utils/getEnvVar.js';
-
+import { UPLOAD_DIR } from './constants/index.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { notFoundHandler } from './middlewares/notFoundHandler.js';
 dotenv.config();
@@ -68,7 +68,7 @@ export const setupServer = () => {
       },
     }),
   );
-
+  app.use('/uploads', express.static(UPLOAD_DIR));
   app.get('/', (req, res) => {
     res.json({
       message: 'Hello MongoDB!',

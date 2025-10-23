@@ -8,8 +8,8 @@ export const SMTP = {
 };
 export const TEMP_UPLOAD_DIR = path.join(process.cwd(), 'src', 'temp');
 export const CLOUDINARY = {
-  CLOUD_NAME: 'CLOUD_NAME',
-  API_KEY: 'API_KEY',
-  API_SECRET: 'API_SECRET',
+  CLOUDINARY_CLOUD_NAME: 'CLOUD_NAME',
+  CLOUDINARY_API_KEY: 'API_KEY',
+  CLOUDINARY_API_SECRET: 'API_SECRET',
 };
 export const UPLOAD_DIR = path.join(process.cwd(), 'uploads');

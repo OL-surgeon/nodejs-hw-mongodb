@@ -52,7 +52,7 @@ authRouter.post('/logout', ctrlWrapper(logoutController));
 // POST /auth/refresh
 // =======================
 authRouter.post('/refresh', ctrlWrapper(refreshSessionController));
-export default router;
+
 // =======================
 // Роути скидання пароля
 // =======================

@@ -17,3 +17,7 @@ export const CLOUDINARY = {
 };
 
 export const UPLOAD_DIR = path.join(process.cwd(), 'uploads');
+export const SORT_ORDER = {
+  ASC: 'asc',
+  DESC: 'desc',
+};

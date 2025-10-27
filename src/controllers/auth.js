@@ -1,26 +1,12 @@
-import {
-  registerUser,
-  loginUser,
-  logoutUser,
-  refreshUsersSession,
-  sendResetToken,
-  resetPassword,
-} from '../services/auth.js';
-import { ctrlWrapper } from '../utils/ctrlWrapper.js';
-import { User } from '../models/user.js';
-import { Session } from '../models/session.js';
-import createHttpError from 'http-errors';
-import { getEnvVar } from '../utils/getEnvVar.js';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import { registerUser } from '../services/auth.js';
+import { loginUser } from '../services/auth.js';
+import { logoutUser } from '../services/auth.js';
+import { refreshUsersSession } from '../services/auth.js';
+import { ONE_DAY } from '../constants/index.js';
+import { sendResetToken } from '../services/auth.js';
+import { resetPassword } from '../services/auth.js';
 
-const JWT_SECRET = getEnvVar('JWT_SECRET');
-const APP_DOMAIN = getEnvVar('APP_DOMAIN');
-
-// =======================
-// Контролер реєстрації
-// =======================
-export const registerController = ctrlWrapper(async (req, res) => {
+export const registerUserController = async (req, res) => {
   const user = await registerUser(req.body);
 
   res.status(201).json({
@@ -28,106 +14,81 @@ export const registerController = ctrlWrapper(async (req, res) => {
     message: 'Successfully registered a user!',
     data: user,
   });
-});
+};
 
-// =======================
-// Контролер логіну
-// =======================
-export const loginUserController = ctrlWrapper(async (req, res) => {
+export const loginUserController = async (req, res) => {
   const session = await loginUser(req.body);
 
   res.cookie('refreshToken', session.refreshToken, {
     httpOnly: true,
-    secure: true,
-    sameSite: 'none',
-    maxAge: 30 * 24 * 60 * 60 * 1000,
+    expires: new Date(Date.now() + ONE_DAY),
   });
-
-  res.cookie('sessionId', session._id.toString(), {
+  res.cookie('sessionId', session._id, {
     httpOnly: true,
-    secure: true,
-    sameSite: 'none',
-    maxAge: 30 * 24 * 60 * 60 * 1000,
+    expires: new Date(Date.now() + ONE_DAY),
   });
-
-  res.status(200).json({
+  res.json({
     status: 200,
     message: 'Successfully logged in an user!',
-    data: { accessToken: session.accessToken },
+    data: {
+      accessToken: session.accessToken,
+    },
   });
-});
+};
 
-// =======================
-// Контролер логауту
-// =======================
-export const logoutController = ctrlWrapper(async (req, res) => {
-  if (!req.cookies.refreshToken) {
-    throw createHttpError(401, 'Refresh token missing');
+export const logoutUserController = async (req, res) => {
+  if (req.cookies.sessionId) {
+    await logoutUser(req.cookies.sessionId);
   }
 
-  await logoutUser(req.cookies.refreshToken);
-
-  res.clearCookie('refreshToken', { httpOnly: true, secure: true });
-  res.clearCookie('sessionId', { httpOnly: true, secure: true });
+  res.clearCookie('sessionId');
+  res.clearCookie('refreshToken');
 
   res.status(204).send();
-});
+};
 
-// =======================
-// Контролер оновлення сесії
-// =======================
-export const refreshSessionController = ctrlWrapper(async (req, res) => {
-  const { refreshToken, sessionId } = req.cookies;
-
-  if (!refreshToken || !sessionId) {
-    throw createHttpError(401, 'Session or refresh token missing');
-  }
-
-  const newSession = await refreshUsersSession({ refreshToken, sessionId });
-
-  res.cookie('refreshToken', newSession.refreshToken, {
+const setupSession = (res, session) => {
+  res.cookie('refreshToken', session.refreshToken, {
     httpOnly: true,
-    secure: true,
-    sameSite: 'none',
-    maxAge: 30 * 24 * 60 * 60 * 1000,
+    expires: new Date(Date.now() + ONE_DAY),
+  });
+  res.cookie('sessionId', session._id, {
+    httpOnly: true,
+    expires: new Date(Date.now() + ONE_DAY),
+  });
+};
+
+export const refreshUserSessionController = async (req, res) => {
+  const session = await refreshUsersSession({
+    sessionId: req.cookies.sessionId,
+    refreshToken: req.cookies.refreshToken,
   });
 
-  res.cookie('sessionId', newSession._id.toString(), {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'none',
-    maxAge: 30 * 24 * 60 * 60 * 1000,
-  });
+  setupSession(res, session);
 
-  res.status(200).json({
+  res.json({
     status: 200,
     message: 'Successfully refreshed a session!',
-    data: { accessToken: newSession.accessToken, sessionId: newSession._id },
+    data: {
+      accessToken: session.accessToken,
+    },
   });
-});
+};
 
-// =======================
-// Контролер відправки листа для скидання пароля
-// =======================
-export const sendResetEmailController = ctrlWrapper(async (req, res) => {
+export const sendResetEmailController = async (req, res) => {
   await sendResetToken(req.body.email);
-
-  res.status(200).json({
+  res.json({
     status: 200,
     message: 'Reset password email has been successfully sent.',
     data: {},
   });
-});
+};
 
-// =======================
-// Контролер скидання пароля
-// =======================
-export const resetPasswordController = ctrlWrapper(async (req, res) => {
+export const resetPasswordController = async (req, res) => {
   await resetPassword(req.body);
-
-  res.status(200).json({
+  res.json({
     status: 200,
     message: 'Password has been successfully reset.',
     data: {},
   });
-});
+};

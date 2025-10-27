@@ -4,23 +4,34 @@ import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 import { validateBody } from '../middlewares/validateBody.js';
 import { isValidId } from '../middlewares/isValidId.js';
 import { authenticate } from '../middlewares/authenticate.js';
+import { upload } from '../middlewares/upload.js';
 import {
   addContactSchema,
   updateContactSchema,
 } from '../schemas/contactsSchemas.js';
-import { upload } from '../middlewares/upload.js';
+
 export const contactsRouter = Router();
 
+// Захищаємо всі маршрути
 contactsRouter.use(authenticate);
 
+// =======================
+// GET /contacts
+// =======================
 contactsRouter.get('/', ctrlWrapper(contactsController.getAllContacts));
 
+// =======================
+// GET /contacts/:contactId
+// =======================
 contactsRouter.get(
   '/:contactId',
   isValidId,
   ctrlWrapper(contactsController.getContactById),
 );
 
+// =======================
+// POST /contacts
+// =======================
 contactsRouter.post(
   '/',
   upload.single('photo'),
@@ -28,6 +39,9 @@ contactsRouter.post(
   ctrlWrapper(contactsController.createContact),
 );
 
+// =======================
+// PATCH /contacts/:contactId
+// =======================
 contactsRouter.patch(
   '/:contactId',
   isValidId,
@@ -36,6 +50,9 @@ contactsRouter.patch(
   ctrlWrapper(contactsController.updateContact),
 );
 
+// =======================
+// DELETE /contacts/:contactId
+// =======================
 contactsRouter.delete(
   '/:contactId',
   isValidId,

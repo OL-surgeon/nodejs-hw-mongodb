@@ -1,18 +1,22 @@
 import { Router } from 'express';
 import cookieParser from 'cookie-parser';
 import { validateBody } from '../middlewares/validateBody.js';
-import { registerUserSchema, loginUserSchema } from '../schemas/authSchemas.js';
 import {
   registerController,
   loginUser,
   logoutController,
   refreshSessionController,
+  sendResetEmailController,
+  resetPasswordController,
 } from '../controllers/auth.js';
+import {
+  registerUserSchema,
+  loginUserSchema,
+  resetEmailSchema,
+  resetPwdSchema,
+} from '../schemas/authSchemas.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
-import { resetEmailSchema } from '../schemas/authSchemas.js';
-import { sendResetEmailController } from '../controllers/auth.js';
-import { resetPwdSchema } from '../schemas/authSchemas.js';
-import { resetPasswordController } from '../controllers/auth.js';
+
 export const authRouter = Router();
 
 // Підключаємо cookieParser для роботи з cookies
@@ -49,11 +53,16 @@ authRouter.post('/refresh', ctrlWrapper(refreshSessionController));
 // POST /auth/logout
 // =======================
 authRouter.post('/logout', ctrlWrapper(logoutController));
+
+// =======================
+// Роути скидання пароля
+// =======================
 authRouter.post(
   '/send-reset-email',
   validateBody(resetEmailSchema),
   ctrlWrapper(sendResetEmailController),
 );
+
 authRouter.post(
   '/reset-pwd',
   validateBody(resetPwdSchema),

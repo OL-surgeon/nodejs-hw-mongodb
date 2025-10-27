@@ -2,13 +2,22 @@ import multer from 'multer';
 import path from 'node:path';
 import { TEMP_UPLOAD_DIR } from '../constants/index.js';
 
+// =======================
+// Налаштування зберігання файлів
+// =======================
 const storage = multer.diskStorage({
-  destination: TEMP_UPLOAD_DIR,
+  destination: (req, file, cb) => {
+    cb(null, TEMP_UPLOAD_DIR);
+  },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
+    const uniqueSuffix = Date.now();
+    cb(null, `${uniqueSuffix}_${file.originalname}`);
   },
 });
 
+// =======================
+// Фільтр та ліміти файлів
+// =======================
 export const upload = multer({
   storage,
   fileFilter: (req, file, cb) => {
@@ -18,5 +27,5 @@ export const upload = multer({
     }
     cb(null, true);
   },
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 МБ
 });

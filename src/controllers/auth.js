@@ -1,6 +1,6 @@
 import {
   registerUser,
-  loginUser,
+  loginUser as loginUserService,
   logoutUser,
   refreshUsersSession,
   sendResetToken,
@@ -8,59 +8,60 @@ import {
 } from '../services/auth.js';
 import { ONE_DAY } from '../constants/index.js';
 
-// --- Реєстрація користувача ---
-export const registerUserController = async (req, res, next) => {
-  try {
-    const user = await registerUser(req.body);
-    res.status(201).json({
-      status: 201,
-      message: 'Successfully registered a user!',
-      data: user,
-    });
-  } catch (err) {
-    next(err);
-  }
+// =======================
+// Контролер реєстрації
+// =======================
+export const registerController = async (req, res) => {
+  const user = await registerUser(req.body);
+
+  res.status(201).json({
+    status: 201,
+    message: 'Successfully registered a user!',
+    data: user,
+  });
 };
 
-// --- Логін користувача ---
-export const loginUserController = async (req, res, next) => {
-  try {
-    const session = await loginUser(req.body);
+// =======================
+// Контролер логіну
+// =======================
+export const loginUser = async (req, res) => {
+  const session = await loginUserService(req.body);
 
-    res.cookie('refreshToken', session.refreshToken, {
-      httpOnly: true,
-      expires: new Date(Date.now() + ONE_DAY),
-    });
-    res.cookie('sessionId', session._id, {
-      httpOnly: true,
-      expires: new Date(Date.now() + ONE_DAY),
-    });
+  res.cookie('refreshToken', session.refreshToken, {
+    httpOnly: true,
+    expires: new Date(Date.now() + ONE_DAY),
+  });
+  res.cookie('sessionId', session._id, {
+    httpOnly: true,
+    expires: new Date(Date.now() + ONE_DAY),
+  });
 
-    res.status(200).json({
-      status: 200,
-      message: 'Successfully logged in a user!',
-      data: { accessToken: session.accessToken },
-    });
-  } catch (err) {
-    next(err);
-  }
+  res.json({
+    status: 200,
+    message: 'Successfully logged in an user!',
+    data: {
+      accessToken: session.accessToken,
+    },
+  });
 };
 
-// --- Вихід користувача ---
-export const logoutUserController = async (req, res, next) => {
-  try {
-    if (req.cookies.sessionId) {
-      await logoutUser(req.cookies.sessionId);
-    }
-    res.clearCookie('refreshToken');
-    res.clearCookie('sessionId');
-    res.status(204).send();
-  } catch (err) {
-    next(err);
+// =======================
+// Контролер логауту
+// =======================
+export const logoutController = async (req, res) => {
+  if (req.cookies.sessionId) {
+    await logoutUser(req.cookies.sessionId);
   }
+
+  res.clearCookie('sessionId');
+  res.clearCookie('refreshToken');
+
+  res.status(204).send();
 };
 
-// --- Допоміжна функція для налаштування сесії в куках ---
+// =======================
+// Допоміжна функція для оновлення сесії
+// =======================
 const setupSession = (res, session) => {
   res.cookie('refreshToken', session.refreshToken, {
     httpOnly: true,
@@ -72,50 +73,48 @@ const setupSession = (res, session) => {
   });
 };
 
-// --- Оновлення сесії користувача ---
-export const refreshUserSessionController = async (req, res, next) => {
-  try {
-    const session = await refreshUsersSession({
-      sessionId: req.cookies.sessionId,
-      refreshToken: req.cookies.refreshToken,
-    });
+// =======================
+// Контролер оновлення сесії
+// =======================
+export const refreshSessionController = async (req, res) => {
+  const session = await refreshUsersSession({
+    sessionId: req.cookies.sessionId,
+    refreshToken: req.cookies.refreshToken,
+  });
 
-    setupSession(res, session);
+  setupSession(res, session);
 
-    res.status(200).json({
-      status: 200,
-      message: 'Successfully refreshed a session!',
-      data: { accessToken: session.accessToken },
-    });
-  } catch (err) {
-    next(err);
-  }
+  res.json({
+    status: 200,
+    message: 'Successfully refreshed a session!',
+    data: {
+      accessToken: session.accessToken,
+    },
+  });
 };
 
-// --- Відправка листа для скидання паролю ---
-export const sendResetEmailController = async (req, res, next) => {
-  try {
-    await sendResetToken(req.body.email);
-    res.status(200).json({
-      status: 200,
-      message: 'Reset password email has been successfully sent.',
-      data: {},
-    });
-  } catch (err) {
-    next(err);
-  }
+// =======================
+// Контролер надсилання листа для скидання пароля
+// =======================
+export const sendResetEmailController = async (req, res) => {
+  await sendResetToken(req.body.email);
+
+  res.json({
+    status: 200,
+    message: 'Reset password email has been successfully sent.',
+    data: {},
+  });
 };
 
-// --- Скидання паролю ---
-export const resetPasswordController = async (req, res, next) => {
-  try {
-    await resetPassword(req.body);
-    res.status(200).json({
-      status: 200,
-      message: 'Password has been successfully reset.',
-      data: {},
-    });
-  } catch (err) {
-    next(err);
-  }
+// =======================
+// Контролер скидання пароля
+// =======================
+export const resetPasswordController = async (req, res) => {
+  await resetPassword(req.body);
+
+  res.json({
+    status: 200,
+    message: 'Password has been successfully reset.',
+    data: {},
+  });
 };

@@ -43,17 +43,16 @@ authRouter.post(
 );
 
 // =======================
-// Роут оновлення сесії
-// POST /auth/refresh
-// =======================
-authRouter.post('/refresh', ctrlWrapper(refreshSessionController));
-
-// =======================
 // Роут логауту
 // POST /auth/logout
 // =======================
 authRouter.post('/logout', ctrlWrapper(logoutController));
-
+// =======================
+// Роут оновлення сесії
+// POST /auth/refresh
+// =======================
+authRouter.post('/refresh', ctrlWrapper(refreshSessionController));
+export default router;
 // =======================
 // Роути скидання пароля
 // =======================

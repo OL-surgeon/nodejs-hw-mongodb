@@ -17,7 +17,8 @@ import {
 } from '../schemas/authSchemas.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 
-const router = Router();
+// ⚡ Оголошуємо роутер і використовуємо його далі
+export const authRouter = Router();
 
 // =======================
 // Роут реєстрації
@@ -44,12 +45,13 @@ authRouter.post(
 // POST /auth/logout
 // =======================
 authRouter.post('/logout', ctrlWrapper(logoutController));
+
 // =======================
 // Роут оновлення сесії
 // POST /auth/refresh
 // =======================
 authRouter.post('/refresh', ctrlWrapper(refreshSessionController));
-export default router;
+
 // =======================
 // Роути скидання пароля
 // =======================

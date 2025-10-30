@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import cookieParser from 'cookie-parser';
+
 import { validateBody } from '../middlewares/validateBody.js';
 import {
   registerController,
@@ -17,10 +17,7 @@ import {
 } from '../schemas/authSchemas.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 
-export const authRouter = Router();
-
-// Підключаємо cookieParser для роботи з cookies
-authRouter.use(cookieParser());
+const router = Router();
 
 // =======================
 // Роут реєстрації
@@ -52,7 +49,7 @@ authRouter.post('/logout', ctrlWrapper(logoutController));
 // POST /auth/refresh
 // =======================
 authRouter.post('/refresh', ctrlWrapper(refreshSessionController));
-
+export default router;
 // =======================
 // Роути скидання пароля
 // =======================

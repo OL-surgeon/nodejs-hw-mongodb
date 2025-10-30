@@ -30,19 +30,20 @@ export const registerUser = async (payload) => {
 
 // --- Логін користувача ---
 export const loginUser = async (payload) => {
-  const user = await User.findOne({ email: payload.email });
-  if (!user) throw createHttpError(401, 'User not found');
+  const user = await UsersCollection.findOne({ email: payload.email });
+  if (!user) {
+    throw createHttpError(401, 'User not found');
+  }
+  const isEqual = await bcrypt.compare(payload.password, user.password);
 
-  const isValid = await bcrypt.compare(payload.password, user.password);
-  if (!isValid) throw createHttpError(401, 'Unauthorized');
-
-  // Видаляємо старі сесії
-  await Session.deleteMany({ userId: user._id });
-
+  if (!isEqual) {
+    throw createHttpError(401, 'Unauthorized');
+  }
+  await SessionsCollection.deleteOne({ userId: user._id });
   const accessToken = randomBytes(30).toString('base64');
   const refreshToken = randomBytes(30).toString('base64');
 
-  return await Session.create({
+  return await SessionsCollection.create({
     userId: user._id,
     accessToken,
     refreshToken,
@@ -120,10 +121,15 @@ export const resetPassword = async ({ token, password }) => {
   try {
     decoded = jwt.verify(token, getEnvVar('JWT_SECRET'));
   } catch (err) {
-    throw createHttpError(401, 'Token is expired or invalid.');
+    if (err instanceof Error)
+      throw createHttpError(401, 'Token is expired or invalid.');
+    throw err;
   }
 
-  const user = await User.findOne({ _id: decoded.sub, email: decoded.email });
+  const user = await User.findOne({
+    email: entries.email,
+    _id: entries.sub,
+  });
   if (!user) throw createHttpError(404, 'User not found');
 
   const hashedPassword = await bcrypt.hash(password, 10);

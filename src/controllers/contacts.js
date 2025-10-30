@@ -1,5 +1,11 @@
 import createHttpError from 'http-errors';
-import * as contactsService from '../services/contacts.js';
+import {
+  createContact,
+  deleteContact,
+  getAllContacts,
+  getContactById,
+  updateContact,
+} from '../services/contacts.js';
 import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
 import { saveFileToUploadDir } from '../utils/saveFileToUploadDir.js';
 import { getEnvVar } from '../utils/getEnvVar.js';

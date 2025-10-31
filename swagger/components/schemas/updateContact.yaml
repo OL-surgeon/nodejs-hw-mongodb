@@ -1,0 +1,27 @@
+type: object
+properties:
+  name:
+    description: "Contact's name"
+    type: string
+    example: 'John Doe'
+  phoneNumber:
+    description: "Contact's phone number"
+    type: string
+    example: '+380123456789'
+  email:
+    description: "Contact's email"
+    type: string
+    example: 'john.doe@example.com'
+  photo:
+    description: 'Optional contact photo file'
+    type: string
+    format: binary
+  isFavourite:
+    description: "Contact's favourite"
+    type: boolean
+    default: false
+    example: false
+  contactType:
+    description: "Contact's type"
+    type: string
+    enum: ['work', 'home', 'personal']

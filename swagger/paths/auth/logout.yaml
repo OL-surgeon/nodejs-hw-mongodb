@@ -1,0 +1,14 @@
+tags:
+  - Auth
+summary: Logout user
+operationId: logoutUser
+description: Log out user and invalidate access token
+security:
+  - bearerAuth: []
+responses:
+  '204':
+    description: 'Successfully deleted contact'
+  '401':
+    $ref: ../../components/responses/401.yaml
+  '500':
+    $ref: '../../components/responses/500.yaml'

@@ -1,0 +1,40 @@
+tags:
+  - Auth
+summary: Login user
+operationId: loginUser
+description: Authentication with aceess and refrech token returns
+security: []
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        $ref: ../../components/schemas/auth/login.yaml
+responses:
+  '200':
+    description: 'Successfully logged in an user!'
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - status
+            - message
+            - data
+          properties:
+            status:
+              type: integer
+              example: 200
+            message:
+              type: string
+              example: Successfully logged in an user!
+            data:
+              type: object
+              required:
+                - accessToken
+              properties:
+                accessToken:
+                  type: string
+                  example: lNH3OHlnn+C7CfMmb+Mv1XJGjlx2fOcHDFkewjyT
+  '409':
+    $ref: ../../components/responses/409.yaml

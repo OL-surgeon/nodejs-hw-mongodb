@@ -1,12 +1,12 @@
 import mongoose from 'mongoose';
-import { contactsRouter } from '../routes/contacts.js';
+import { getEnvVar } from '../utils/getEnvVar.js';
 
 export const initMongoConnection = async () => {
   try {
-    const user = contactsRouter('MONGODB_USER');
-    const pwd = contactsRouter('MONGODB_PASSWORD');
-    const url = contactsRouter('MONGODB_URL');
-    const db = contactsRouter('MONGODB_DB');
+    const user = getEnvVar('MONGODB_USER');
+    const pwd = getEnvVar('MONGODB_PASSWORD');
+    const url = getEnvVar('MONGODB_URL');
+    const db = getEnvVar('MONGODB_DB');
 
     await mongoose.connect(
       `mongodb+srv://${user}:${pwd}@${url}/${db}?retryWrites=true&w=majority`,
